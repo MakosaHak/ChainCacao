@@ -202,31 +202,52 @@ async function saveLot() {
     }
 }
 
+// --- DASHBOARD REAL-TIME ---
+let unsubscribe = null;
+
 async function loadDashboardData() {
     const list = document.getElementById('lots-list');
-    list.innerHTML = '<div class="placeholder">Chargement...</div>';
+    list.innerHTML = '<div class="placeholder">Synchronisation...</div>';
+
+    if (!auth.currentUser) return;
+
+    // Arrêter l'écouteur précédent si existant
+    if (unsubscribe) unsubscribe();
 
     try {
         let query = db.collection('lots');
-        if (currentProfile && currentProfile.role === 'agriculteur') {
-            query = query.where('producteur_id', '==', auth.currentUser.uid);
+
+        if (currentProfile) {
+            if (currentProfile.role === 'agriculteur') {
+                query = query.where('producteur_id', '==', auth.currentUser.uid);
+            } else if (currentProfile.role === 'verificateur') {
+                query = query.where('status', '==', 'En transit');
+            } else if (currentProfile.role === 'exportateur') {
+                query = query.where('status', '==', 'Certifié');
+            }
         }
-        
-        const snapshot = await query.orderBy('created_at', 'desc').limit(10).get();
-        const lots = [];
-        snapshot.forEach(doc => lots.push(doc.data()));
 
-        document.getElementById('stat-lots').innerText = lots.length;
-        const totalWeight = lots.reduce((acc, lot) => acc + (lot.poids || 0), 0);
-        document.getElementById('stat-weight').innerText = totalWeight.toFixed(1);
+        // Utilisation d'un listener en temps réel
+        unsubscribe = query.onSnapshot((snapshot) => {
+            let lots = [];
+            snapshot.forEach(doc => lots.push(doc.data()));
 
-        renderLots(lots);
+            // Tri par date décroissante
+            lots.sort((a, b) => (b.created_at?.toDate() || 0) - (a.created_at?.toDate() || 0));
+
+            document.getElementById('stat-lots').innerText = lots.length;
+            document.getElementById('stat-weight').innerText = lots.reduce((acc, lot) => acc + (parseFloat(lot.poids) || 0), 0).toFixed(1);
+
+            renderLots(lots);
+        }, (err) => {
+            console.error("Erreur Dashboard:", err);
+            list.innerHTML = `<div class="placeholder">Erreur : ${err.message}</div>`;
+        });
     } catch (e) {
-        console.error(e);
-        list.innerHTML = '<div class="placeholder">Aucun lot trouvé</div>';
+        console.error("Erreur Query:", e);
+        list.innerHTML = `<div class="placeholder">Erreur : ${e.message}</div>`;
     }
 }
-
 function renderLots(lots) {
     const list = document.getElementById('lots-list');
     list.innerHTML = "";
