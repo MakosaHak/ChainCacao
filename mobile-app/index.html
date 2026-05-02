@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="style.css">
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
@@ -144,6 +145,53 @@
             <div id="qrcode" style="margin-bottom: 24px;"></div>
             <p style="font-size: 12px; font-weight: 600; color: #777;">Preuve d'origine immuable.</p>
             <button class="btn-main" onclick="navigateTo('screen-dashboard')">Fermer</button>
+        </div>
+    </div>
+
+    <!-- 7. Scanner Camera -->
+    <div id="screen-scanner" class="screen">
+        <div class="header">
+            <button onclick="stopScanner(); navigateTo('screen-dashboard')" style="background:none; border:none; color: var(--primary);"><span class="material-symbols-outlined">arrow_back</span></button>
+            <h2>Scanner un Lot</h2>
+            <div style="width: 24px;"></div>
+        </div>
+        <div id="reader" style="width: 100%; border-radius: 20px; overflow: hidden; background: black; min-height: 300px;"></div>
+        <p style="text-align: center; margin-top: 20px; font-size: 13px; font-weight: 700; color: #666;">Cadrez le QR Code sur le sac.</p>
+    </div>
+
+    <!-- 8. Confirmation Transfert -->
+    <div id="screen-confirm-transfer" class="screen">
+        <div class="header">
+            <button onclick="navigateTo('screen-dashboard')" style="background:none; border:none; color: var(--primary);"><span class="material-symbols-outlined">close</span></button>
+            <h2>Validation Réception</h2>
+            <div style="width: 24px;"></div>
+        </div>
+        <div class="card">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <span id="conf-id-lot" style="font-size: 24px; font-weight: 800; color: var(--primary);">#ID-LOT</span>
+                <p id="conf-variete" style="font-weight: 700; color: #777;"></p>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; padding: 12px; background: #f8f9fa; border-radius: 12px; margin-bottom: 12px;">
+                <span style="font-size: 12px; font-weight: 700;">Poids déclaré :</span>
+                <span id="conf-poids" style="font-size: 12px; font-weight: 800;">0 KG</span>
+            </div>
+
+            <div style="padding: 12px; background: #e8f5e9; border-radius: 12px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                <span class="material-symbols-outlined" style="color: var(--primary);">verified</span>
+                <div>
+                    <p style="font-size: 11px; font-weight: 800; color: var(--primary);">ORIGINE CERTIFIÉE</p>
+                    <p id="conf-gps" style="font-size: 10px; font-weight: 600; opacity: 0.7;"></p>
+                </div>
+            </div>
+
+            <label style="font-size: 11px; font-weight: 800; color: #999; text-transform: uppercase; margin-bottom: 8px; display: block;">Nouveau Statut</label>
+            <select id="update-status-select">
+                <option value="En transit">En transit (Collecté)</option>
+                <option value="Certifié">Certifié (Entrepôt)</option>
+            </select>
+
+            <button class="btn-main" onclick="confirmReception()">Valider la Réception</button>
         </div>
     </div>
 

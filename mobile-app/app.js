@@ -104,6 +104,28 @@ function updateUIByRole(role) {
                 <span>Actualiser</span>
             </button>
         `;
+    } else if (role === 'verificateur') {
+        actionsSection.innerHTML = `
+            <button class="btn-action" onclick="startScanner()">
+                <span class="material-symbols-outlined">qr_code_scanner</span>
+                <span>Audit Lot (Scan)</span>
+            </button>
+            <button class="btn-action alt" onclick="loadDashboardData()">
+                <span class="material-symbols-outlined">description</span>
+                <span>Derniers Certifiés</span>
+            </button>
+        `;
+    } else if (role === 'exportateur') {
+        actionsSection.innerHTML = `
+            <button class="btn-action" onclick="loadDashboardData()">
+                <span class="material-symbols-outlined">workspace_premium</span>
+                <span>Certifier EUDR</span>
+            </button>
+            <button class="btn-action alt" onclick="navigateTo('screen-dashboard')">
+                <span class="material-symbols-outlined">local_shipping</span>
+                <span>Lots Exportés</span>
+            </button>
+        `;
     } else {
         actionsSection.innerHTML = `
             <button class="btn-action" onclick="navigateTo('screen-add-lot')">
@@ -118,6 +140,23 @@ function updateUIByRole(role) {
     }
 }
 
+// Nouvelle fonction pour l'exportateur pour certifier
+async function certifyLot(lot) {
+    if (!confirm(`Certifier officiellement le lot ${lot.id_lot} EUDR ?`)) return;
+
+    try {
+        await db.collection('lots').doc(lot.id_lot).update({ status: 'Certifié' });
+        await db.collection('lot_history').add({
+            id_lot: lot.id_lot,
+            step_name: "Certification EUDR Officielle",
+            description: "Exportateur a validé l'intégrité GPS et généré le certificat officiel.",
+            location: "Plateforme Export",
+            created_at: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        alert("Certificat EUDR généré et lot certifié.");
+        loadDashboardData();
+    } catch (e) { alert("Erreur : " + e.message); }
+}
 // --- GESTION DES LOTS ---
 function captureGPS() {
     const statusText = document.getElementById('gps-text');

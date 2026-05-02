@@ -1,43 +1,78 @@
-🍫 ChainCacao - Système de Traçabilité (Phase 2 - Demi-Finale)
-📋 Contexte du Projet
-ChainCacao est une solution de confiance pour la filière cacao au Togo, conçue par l'équipe TG 26. Le but est de garantir la non-déforestation (Conformité EUDR) et la juste rémunération des producteurs via la technologie Blockchain.
+# 🍫 ChainCacao - Système de Traçabilité Intégral
 
-📂 Structure des Dossiers
-/mobile-app : Interface HTML/JS (Maquettes transformées en code) destinée aux agriculteurs pour la saisie terrain.
+ChainCacao est une plateforme technologique conçue pour sécuriser la filière cacao au Togo. Elle garantit la **non-déforestation (Conformité EUDR)** et une traçabilité immuable grâce à la technologie Blockchain.
 
-/web-vitrine : Site web institutionnel incluant le portail de vérification publique.
+---
 
-🛠️ Mission : Rendre le système dynamique avec Supabase
-L'objectif est d'utiliser Supabase comme "pont" pour que les données saisies sur le mobile apparaissent instantanément sur le site web.
+## 👥 Les Acteurs & Rôles
 
-1. Configuration de la Base de Données (Supabase)
-Créer une table nommée lots avec les colonnes suivantes :
+Le système simule l'interaction entre quatre types d'utilisateurs clés :
 
-id_lot (Text, Primary Key) : Ex: #TG-26-001.
+### 1. L'Agriculteur / Producteur (Terrain)
+*   **Outil :** Application Mobile
+*   **Actions :** 
+    *   Enregistre sa récolte.
+    *   Sélectionne la variété de cacao (Criollo, Forastero, Trinitario).
+    *   **Capture GPS :** Fixe les coordonnées exactes de sa parcelle pour prouver qu'il ne cultive pas dans une zone protégée.
+    *   **Ancrage Blockchain :** Génère un ID unique ancré sur Polygon.
 
-variete (Text) : Criollo, Forastero ou Trinitario.
+### 2. Le Responsable de Coopérative (Gestionnaire)
+*   **Outil :** Application Mobile & Web
+*   **Actions :** 
+    *   **Scanner de Collecte :** Utilise son téléphone pour scanner les sacs lors de la collecte.
+    *   **Validation des transferts :** Change le statut du lot de "Récolté" à "En transit".
+    *   **Suivi des volumes :** Visualise les tonnes collectées par zone géographique.
 
-poids (Float) : Quantité récoltée en KG.
+### 3. L'Exportateur (Garant de la conformité)
+*   **Outil :** Portail Web Professionnel
+*   **Actions :** 
+    *   Vérifie l'intégrité des données GPS reçues du terrain.
+    *   **Génération de Certificat EUDR :** Produit le document légal nécessaire pour l'entrée sur le marché européen.
+    *   Prépare l'expédition internationale.
 
-gps_lat & gps_long (Float) : Coordonnées récupérées via l'API Geolocation.
+### 4. Le Vérificateur / Client Final (Audit & Transparence)
+*   **Outil :** Portail Web / Public
+*   **Actions :** 
+    *   Vérifie l'ID d'un lot pour voir son historique complet.
+    *   Consulte l'**Odyssée du Cacao** (Chronologie : Récolte ➔ Fermentation ➔ Transport ➔ Export).
+    *   Vérifie la preuve immuable sur l'explorateur blockchain.
 
-status (Text) : "Récolté", "En transit" ou "Certifié".
+---
 
-created_at (Timestamp).
+## 🔄 Le Flux Opérationnel (L'Odyssée du Cacao)
 
-2. Développement de l'App Mobile (/mobile-app)
-Enregistrement : Connecter le formulaire pour qu'un clic sur "Enregistrer" envoie les données vers la table lots de Supabase.
+```mermaid
+graph LR
+    A[Agriculteur: Récolte + GPS] -->|ID Blockchain| B(Coopérative: Scan & Collecte)
+    B -->|Mise en conformité| C(Exportateur: Certificat EUDR)
+    C -->|Cacao Certifié| D(Marché Européen / Vérificateur)
+    D -->|Scan QR Code| E[Preuve de Non-Déforestation]
+```
 
-Géolocalisation : Utiliser navigator.geolocation pour remplir les champs de coordonnées lors de la saisie.
+1.  **Origine :** L'agriculteur crée le lot sur le terrain. Le GPS est obligatoire (Critère EUDR 2025).
+2.  **Centralisation :** La coopérative valide la réception physique.
+3.  **Certification :** L'exportateur compile les preuves numériques.
+4.  **Confiance :** L'acheteur final accède à la vérité du produit en un clic.
 
-Transfert : Ajouter une fonction pour mettre à jour le champ status lors du passage de l'agriculteur à la coopérative.
+---
 
-3. Développement du Portail Web (/web-vitrine)
-Barre de Recherche : Intégrer un champ de saisie d'ID dans l'onglet "Vérification" (ou via le menu "La Maquette" actuel).
+## 🛠 Architecture Technique
 
-Affichage des Preuves : Faire une requête SELECT sur Supabase pour afficher les détails du lot (Poids, Origine, Date).
+*   **Frontend :** HTML5, Tailwind CSS (Design Premium & Responsive).
+*   **Backend :** Firebase (Authentification & Firestore pour le temps réel).
+*   **Blockchain :** Simulation d'ancrage Polygon (Hash immuable généré pour chaque lot).
+*   **Mobile-First :** Interface optimisée pour les zones rurales avec mode de données léger.
 
-Cartographie : Utiliser une bibliothèque comme Leaflet.js pour placer un marqueur sur une carte avec les coordonnées GPS du lot.
+---
 
-💡 Note Stratégique pour la Demi-Finale
-Blockchain : Pour cette phase, les données sont stockées sur Supabase. La preuve blockchain est représentée par un champ blockchain_hash généré pour simuler l'ancrage futur sur Polygon.
+## 🚀 Déploiement
+
+Le projet est structuré pour être déployé sur **Netlify** via le dossier `dist/` :
+*   **Site Vitrine :** `/index.html`
+*   **Portail Pro :** `/portal.html`
+*   **App Mobile :** `/mobile-app/index.html`
+
+---
+
+**ChainCacao — Sécuriser l'or brun du Togo par la transparence numérique.**
+*Projet réalisé par l'équipe TG-26.*
