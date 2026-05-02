@@ -112,6 +112,8 @@ async function updatePortalView(user) {
         
         // Charger les statistiques globales
         loadGlobalStats();
+        // Charger la liste des lots selon le rôle
+        loadLotsList(profile.role);
     }
 }
 
@@ -127,55 +129,139 @@ async function loadGlobalStats() {
     } catch (e) { console.error(e); }
 }
 
+async function loadLotsList(role) {
+    const listContainer = document.getElementById('lots-table-body');
+    if (!listContainer) return;
+    listContainer.innerHTML = '<tr><td colspan="5" class="text-center py-4">Chargement...</td></tr>';
+
+    try {
+        let query = db.collection('lots');
+        // Les vérificateurs voient tout ce qui est en transit
+        // Les exportateurs voient tout ce qui est certifié
+        
+        const snap = await query.orderBy('created_at', 'desc').get();
+        listContainer.innerHTML = '';
+
+        if (snap.empty) {
+            listContainer.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-gray-400">Aucun lot trouvé</td></tr>';
+            return;
+        }
+
+        snap.forEach(doc => {
+            const lot = doc.data();
+            const tr = document.createElement('tr');
+            tr.className = "border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer";
+            tr.onclick = () => {
+                document.getElementById('lot-search-input').value = lot.id_lot;
+                searchLot();
+            };
+            
+            let statusColor = "bg-gray-100 text-gray-600";
+            if (lot.status === "Récolté") statusColor = "bg-blue-100 text-blue-600";
+            if (lot.status === "En transit") statusColor = "bg-orange-100 text-orange-600";
+            if (lot.status === "Certifié") statusColor = "bg-green-100 text-green-600";
+            if (lot.status === "Exporté") statusColor = "bg-purple-100 text-purple-600";
+
+            tr.innerHTML = `
+                <td class="py-4 px-2 font-bold text-primary">${lot.id_lot}</td>
+                <td class="py-4 px-2 text-sm">${lot.variete}</td>
+                <td class="py-4 px-2 text-sm">${lot.poids} KG</td>
+                <td class="py-4 px-2">
+                    <span class="px-2 py-1 rounded-md text-[10px] font-bold uppercase ${statusColor}">${lot.status}</span>
+                </td>
+                <td class="py-4 px-2 text-xs text-gray-400">${lot.blockchain_hash ? lot.blockchain_hash.substring(0, 8) + '...' : '---'}</td>
+            `;
+            listContainer.appendChild(tr);
+        });
+    } catch (e) {
+        console.error(e);
+        listContainer.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-red-500">Erreur de chargement</td></tr>';
+    }
+}
+
 // --- RECHERCHE ET ACTIONS ---
 
 async function searchLot() {
     const id = document.getElementById('lot-search-input').value.trim();
     if (!id) return;
 
-    const doc = await db.collection('lots').doc(id).get();
-    if (doc.exists) {
-        const lot = doc.data();
-        document.getElementById('search-result').classList.remove('hidden');
-        document.getElementById('res-id').innerText = lot.id_lot;
-        document.getElementById('res-variete').innerText = lot.variete || "N/A";
-        document.getElementById('res-poids').innerText = lot.poids || 0;
-        document.getElementById('res-status').innerText = lot.status;
-        document.getElementById('res-hash').innerText = lot.blockchain_hash || "0x...";
-        
-        if (lot.created_at) {
-            document.getElementById('res-date').innerText = "Chargé le " + lot.created_at.toDate().toLocaleDateString();
-        }
+    try {
+        const doc = await db.collection('lots').doc(id).get();
+        if (doc.exists) {
+            const lot = doc.data();
+            document.getElementById('search-result').classList.remove('hidden');
+            document.getElementById('res-id').innerText = lot.id_lot;
+            document.getElementById('res-variete').innerText = lot.variete || "N/A";
+            document.getElementById('res-poids').innerText = lot.poids || 0;
+            
+            const statusEl = document.getElementById('res-status');
+            statusEl.innerText = lot.status;
+            statusEl.className = "tag " + (lot.status === 'Certifié' ? 'tag-success' : 'tag-warning');
 
-        // Adapter les actions selon le rôle
-        const user = auth.currentUser;
-        const profileDoc = await db.collection('profiles').doc(user.uid).get();
-        const role = profileDoc.data().role;
+            document.getElementById('res-hash').innerText = lot.blockchain_hash || "0x...";
+            
+            if (lot.created_at) {
+                document.getElementById('res-date').innerText = "Enregistré le " + lot.created_at.toDate().toLocaleDateString();
+            }
 
-        const vActions = document.getElementById('verifier-actions');
-        const bCert = document.getElementById('btn-generate-cert');
-        const cView = document.getElementById('client-view');
+            // Adapter les actions selon le rôle
+            const user = auth.currentUser;
+            const profileDoc = await db.collection('profiles').doc(user.uid).get();
+            const role = profileDoc.data().role;
 
-        vActions.classList.add('hidden');
-        cView.classList.add('hidden');
+            const vActions = document.getElementById('verifier-actions');
+            const bCertify = document.getElementById('btn-certify');
+            const bExport = document.getElementById('btn-export');
+            const bDoc = document.getElementById('btn-generate-cert');
+            const cView = document.getElementById('client-view');
 
-        if (role === 'verificateur' || role === 'exportateur') {
-            vActions.classList.remove('hidden');
-            if (role === 'exportateur') bCert.classList.remove('hidden');
+            vActions.classList.add('hidden');
+            bCertify.classList.add('hidden');
+            bExport.classList.add('hidden');
+            bDoc.classList.add('hidden');
+            cView.classList.add('hidden');
+
+            if (role === 'verificateur') {
+                vActions.classList.remove('hidden');
+                if (lot.status === 'En transit') bCertify.classList.remove('hidden');
+            } else if (role === 'exportateur') {
+                vActions.classList.remove('hidden');
+                if (lot.status === 'Certifié') {
+                    bExport.classList.remove('hidden');
+                    bDoc.classList.remove('hidden');
+                }
+            } else {
+                cView.classList.remove('hidden');
+            }
         } else {
-            cView.classList.remove('hidden');
+            alert("Lot introuvable.");
         }
-    } else {
-        alert("Lot introuvable.");
-    }
+    } catch (e) { console.error(e); }
 }
 
 async function updateLotStatus(newStatus) {
     const id = document.getElementById('res-id').innerText;
+    const user = auth.currentUser;
+    const profileDoc = await db.collection('profiles').doc(user.uid).get();
+    const profile = profileDoc.data();
+
     try {
         await db.collection('lots').doc(id).update({ status: newStatus });
-        alert("Statut mis à jour !");
-        searchLot(); // Rafraîchir
+        
+        // Ajout à l'historique
+        await db.collection('lot_history').add({
+            id_lot: id,
+            step_name: newStatus === 'Certifié' ? "Certification EUDR" : "Exportation",
+            description: newStatus === 'Certifié' ? 
+                `Validation de conformité EUDR effectuée par le vérificateur.` : 
+                `Lot expédié vers le marché international.`,
+            location: profile.full_name,
+            created_at: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        alert("Statut mis à jour : " + newStatus);
+        searchLot(); // Rafraîchir la vue détail
+        loadLotsList(profile.role); // Rafraîchir la liste
     } catch (e) { alert(e.message); }
 }
 

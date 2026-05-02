@@ -179,11 +179,14 @@
 
                         <!-- Actions Spécifiques -->
                         <div id="verifier-actions" class="hidden" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                            <button onclick="updateLotStatus('Certifié')" class="btn btn-primary" style="background: var(--tertiary);">
+                            <button id="btn-certify" onclick="updateLotStatus('Certifié')" class="btn btn-primary hidden" style="background: var(--tertiary);">
                                 <span class="material-symbols-outlined">verified</span> CERTIFIER EUDR
                             </button>
-                            <button id="btn-generate-cert" onclick="generateEUCertificate()" class="btn btn-primary hidden">
-                                <span class="material-symbols-outlined">description</span> GÉNÉRER CERTIFICAT
+                            <button id="btn-export" onclick="updateLotStatus('Exporté')" class="btn btn-primary hidden" style="background: var(--primary);">
+                                <span class="material-symbols-outlined">local_shipping</span> MARQUER COMME EXPORTÉ
+                            </button>
+                            <button id="btn-generate-cert" onclick="generateEUCertificate()" class="btn btn-outline hidden">
+                                <span class="material-symbols-outlined">description</span> TÉLÉCHARGER CERTIFICAT
                             </button>
                         </div>
 
@@ -191,6 +194,30 @@
                             <p style="color: var(--primary); font-weight: 700; font-style: italic;">
                                 Ce lot est 100% conforme à la réglementation européenne EUDR contre la déforestation.
                             </p>
+                        </div>
+                    </div>
+
+                    <!-- Liste Globale des Lots -->
+                    <div class="card">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h4 style="font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--secondary);">Tous les Lots du Réseau</h4>
+                            <button onclick="loadLotsList(document.getElementById('web-user-role').innerText.toLowerCase())" class="btn btn-outline" style="padding: 4px 12px; font-size: 10px;">RAFRAÎCHIR</button>
+                        </div>
+                        <div style="overflow-x: auto;">
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="text-align: left; border-bottom: 2px solid #eee;">
+                                        <th style="padding: 12px 8px; font-size: 11px; font-weight: 800; color: #999;">ID LOT</th>
+                                        <th style="padding: 12px 8px; font-size: 11px; font-weight: 800; color: #999;">VARIÉTÉ</th>
+                                        <th style="padding: 12px 8px; font-size: 11px; font-weight: 800; color: #999;">POIDS</th>
+                                        <th style="padding: 12px 8px; font-size: 11px; font-weight: 800; color: #999;">STATUT</th>
+                                        <th style="padding: 12px 8px; font-size: 11px; font-weight: 800; color: #999;">BLOCKCHAIN</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="lots-table-body">
+                                    <!-- Populé par JS -->
+                                </tbody>
+                            </table>
                         </div>
                     </div>
 
