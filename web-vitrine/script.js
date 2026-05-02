@@ -190,15 +190,23 @@ async function searchLot() {
         if (doc.exists) {
             const lot = doc.data();
             document.getElementById('search-result').classList.remove('hidden');
+            
+            // Affichage complet des informations
             document.getElementById('res-id').innerText = lot.id_lot;
             document.getElementById('res-variete').innerText = lot.variete || "N/A";
             document.getElementById('res-poids').innerText = lot.poids || 0;
             
+            // Affichage du GPS et Conformité
             const statusEl = document.getElementById('res-status');
             statusEl.innerText = lot.status;
             statusEl.className = "tag " + (lot.status === 'Certifié' ? 'tag-success' : 'tag-warning');
 
-            document.getElementById('res-hash').innerText = lot.blockchain_hash || "0x...";
+            // Ajout visuel des données de conformité
+            document.getElementById('res-hash').innerHTML = `
+                <p>Hash: ${lot.blockchain_hash || "0x..."}</p>
+                <p style="margin-top:5px; font-weight:800;">Coordonnées GPS: ${lot.gps_lat.toFixed(4)}, ${lot.gps_long.toFixed(4)}</p>
+                <p style="margin-top:5px;">Conformité EUDR: <span style="color:green;">${lot.is_deforestation_free ? 'OUI' : 'NON'}</span></p>
+            `;
             
             if (lot.created_at) {
                 document.getElementById('res-date').innerText = "Enregistré le " + lot.created_at.toDate().toLocaleDateString();
@@ -210,26 +218,39 @@ async function searchLot() {
             const role = profileDoc.data().role;
 
             const vActions = document.getElementById('verifier-actions');
-            const bCertify = document.getElementById('btn-certify');
-            const bExport = document.getElementById('btn-export');
+            const bCertify = document.getElementById('btn-certify'); // Conformité EUDR
             const bDoc = document.getElementById('btn-generate-cert');
             const cView = document.getElementById('client-view');
 
             vActions.classList.add('hidden');
             bCertify.classList.add('hidden');
-            bExport.classList.add('hidden');
             bDoc.classList.add('hidden');
             cView.classList.add('hidden');
 
-            if (role === 'verificateur') {
+            if (role === 'exportateur') {
                 vActions.classList.remove('hidden');
-                if (lot.status === 'En transit') bCertify.classList.remove('hidden');
-            } else if (role === 'exportateur') {
-                vActions.classList.remove('hidden');
-                if (lot.status === 'Certifié') {
-                    bExport.classList.remove('hidden');
+                // Exportateur : Bouton de conformité EUDR
+                if (lot.status !== 'Certifié') {
+                    bCertify.classList.remove('hidden');
+                    bCertify.innerHTML = '<span class="material-symbols-outlined">verified</span> CONFORMITÉ EUDR';
+                } else {
+                    // Si déjà certifié, montrer le bouton de génération de certif
                     bDoc.classList.remove('hidden');
                 }
+            } else if (role === 'verificateur') {
+                // Vérificateur : Lecture seule des infos, voir le badge
+                cView.classList.remove('hidden');
+                cView.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-4xl ${lot.status === 'Certifié' ? 'text-green-600' : 'text-orange-500'}">
+                            ${lot.status === 'Certifié' ? 'check_circle' : 'pending'}
+                        </span>
+                        <div>
+                            <p style="font-weight:800;">Statut Certification: ${lot.status === 'Certifié' ? 'CONFORME (CERTIFIÉ)' : 'EN ATTENTE'}</p>
+                            <p style="font-size:12px;">Preuve EUDR enregistrée sur Blockchain.</p>
+                        </div>
+                    </div>
+                `;
             } else {
                 cView.classList.remove('hidden');
             }
@@ -237,6 +258,18 @@ async function searchLot() {
             alert("Lot introuvable.");
         }
     } catch (e) { console.error(e); }
+}
+
+async function markConformity() {
+    const id = document.getElementById('res-id').innerText;
+    try {
+        await db.collection('lots').doc(id).update({ 
+            status: 'Certifié',
+            is_deforestation_free: true 
+        });
+        alert("Lot marqué conforme et certifié !");
+        searchLot();
+    } catch (e) { alert(e.message); }
 }
 
 async function updateLotStatus(newStatus) {
