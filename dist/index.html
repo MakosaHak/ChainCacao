@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html class="light" lang="fr">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>ChainCacao | L'Excellence du Terroir Numérique</title>
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet" />
+
+    <!-- Style -->
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#154212',
+                        secondary: '#755750',
+                        tertiary: '#735c00',
+                        background: '#F8F9FA',
+                        'surface-variant': '#f4f4e8',
+                        error: '#ba1a1a',
+                    },
+                    fontFamily: {
+                        headline: ['Plus Jakarta Sans', 'sans-serif'],
+                        body: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+
+    <script src="script.js" defer></script>
+</head>
+
+<body class="bg-background text-on-surface font-body overflow-x-hidden">
+    
+    <!-- NAVIGATION -->
+    <nav class="fixed top-0 w-full z-[100] bg-white/95 backdrop-blur-md border-b border-black/5">
+        <div class="flex justify-between items-center px-6 md:px-12 py-4 max-w-[1440px] mx-auto">
+            <!-- Logo -->
+            <div class="flex items-center gap-3 cursor-pointer shrink-0" onclick="window.location.href='#home'">
+                <img src="Logo.png" alt="Logo" style="height: 40px; width: auto;">
+                <span class="text-xl font-extrabold text-primary tracking-tighter font-headline">ChainCacao</span>
+            </div>
+            
+            <!-- Actions -->
+            <div class="flex items-center gap-4">
+                <!-- Liens Desktop -->
+                <div class="hidden lg:flex gap-8 text-sm font-bold text-secondary mr-6">
+                    <a href="#home" class="hover:text-primary transition-all">Accueil</a>
+                    <a href="#problem" class="hover:text-primary transition-all">Défi</a>
+                    <a href="#solution" class="hover:text-primary transition-all">Solution</a>
+                </div>
+
+                <!-- Boutons essentiels -->
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <a href="../mobile-app/index.html" class="flex items-center gap-2 bg-white border-2 border-primary text-primary px-4 py-2 rounded-xl font-headline font-bold text-xs md:text-sm hover:bg-primary hover:text-white transition-all">
+                        <span class="material-symbols-outlined text-lg hidden md:block">smartphone</span>
+                        <span>App Mobile</span>
+                    </a>
+                    <a href="portal.html" class="flex items-center gap-2 bg-primary text-white px-4 py-2 md:py-2.5 rounded-xl font-headline font-bold text-xs md:text-sm hover:bg-black transition-all shadow-lg shadow-primary/10">
+                        <span class="material-symbols-outlined text-lg hidden md:block">account_circle</span>
+                        <span>Portail Pro</span>
+                    </a>
+                </div>
+                
+                <!-- Menu Burger -->
+                <button id="mobile-menu-btn" class="lg:hidden p-2 text-primary">
+                    <span class="material-symbols-outlined text-3xl">menu</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Menu Mobile Overlay (SOLIDE ET OPAQUE) -->
+        <div id="mobile-menu" class="fixed inset-0 z-[200] bg-white transform translate-x-full transition-transform duration-500 lg:hidden flex flex-col w-full h-full">
+            <div class="flex justify-between items-center px-8 py-6 border-b border-black/5 bg-white">
+                <div class="flex items-center gap-3">
+                    <img src="Logo.png" alt="Logo" style="height: 36px;">
+                    <span class="text-xl font-extrabold text-primary font-headline">ChainCacao</span>
+                </div>
+                <button id="close-menu-btn" class="p-2 text-primary bg-primary/5 rounded-full">
+                    <span class="material-symbols-outlined text-3xl">close</span>
+                </button>
+            </div>
+            <div class="flex-1 flex flex-col p-10 space-y-8 text-3xl font-headline font-extrabold text-primary bg-white">
+                <a href="#home" class="mobile-nav-link">Accueil</a>
+                <a href="#problem" class="mobile-nav-link">Le Défi</a>
+                <a href="#solution" class="mobile-nav-link">Notre Solution</a>
+                <div class="pt-10 space-y-6">
+                    <a href="../mobile-app/index.html" class="flex items-center justify-center gap-4 w-full py-6 rounded-3xl border-2 border-primary text-primary text-xl">
+                        <span class="material-symbols-outlined text-2xl">smartphone</span> App Mobile
+                    </a>
+                    <a href="portal.html" class="flex items-center justify-center gap-4 w-full py-6 rounded-3xl bg-primary text-white text-xl">
+                        <span class="material-symbols-outlined text-2xl">account_circle</span> Portail Pro
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="w-full">
+        <!-- Hero Section -->
+        <section id="home" class="relative pt-32 pb-16 md:pt-48 md:pb-40 overflow-hidden">
+            <div class="max-w-[1440px] mx-auto px-6 md:px-12">
+                <div class="grid lg:grid-cols-12 gap-12 items-center">
+                    <div class="lg:col-span-6 text-center lg:text-left">
+                        <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-primary/5 text-primary font-headline text-[11px] font-bold uppercase tracking-[0.15em] rounded-full mb-8 border border-primary/10">
+                            Blockchain & Traçabilité Certifiée
+                        </div>
+                        <h1 class="text-5xl md:text-[5.5rem] font-headline font-extrabold text-primary leading-[0.95] tracking-tighter mb-8">
+                            Sécuriser l'or brun <span class="text-tertiary">du Togo.</span>
+                        </h1>
+                        <p class="text-lg md:text-xl text-secondary max-w-lg mx-auto lg:mx-0 leading-relaxed mb-10 opacity-80">
+                            Face aux exigences de l'EUDR, nous garantissons une traçabilité immuable du champ à l'export.
+                        </p>
+                        <div class="flex flex-col sm:flex-row justify-center lg:justify-start gap-4">
+                            <button onclick="window.location.href='portal.html'" class="bg-primary text-white px-10 py-5 rounded-full font-headline font-bold text-lg shadow-2xl shadow-primary/20 hover:bg-black transition-all flex items-center justify-center gap-3">
+                                Ouvrir le Portail
+                                <span class="material-symbols-outlined">login</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="lg:col-span-6">
+                        <div class="aspect-[4/5] rounded-[2rem] overflow-hidden shadow-2xl">
+                            <img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAYX-tLKLzyekXdkzXU2sfOMNdNPnjhrmvVcCo69Ko1Y7AGKAbdyexrbPLpqka3vnao9HjRN2iESw7dRBD6c3YWuBQ5GLxeZ4FVzClqx0uVh4S85cTPY3gY58h8EyfOfTDVV45NIH5U4VCu882cZkSeuLlC5sWG3cu32GJydz5aW0XRf3qFRu-7Mhel9xkvGphtWJlOQDUxRj_70esp3IgqSCL8tAIypvobfi_5p8Lr37LTI2NEAgPTFyEZ6LpgdSmlLKBmOqo3LkQp" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Défi -->
+        <section id="problem" class="py-24 bg-surface-variant/30">
+            <div class="max-w-[1440px] mx-auto px-6 md:px-12">
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+                    <div class="md:col-span-8 bg-white rounded-3xl p-10 md:p-16 shadow-sm border border-black/5 flex flex-col justify-between">
+                        <h3 class="text-3xl font-headline font-extrabold text-primary mb-6">L'urgence EUDR 2025</h3>
+                        <div class="mt-16 flex items-end gap-6">
+                            <div class="text-8xl font-headline font-extrabold text-primary tracking-tighter">40k<span class="text-tertiary">+</span></div>
+                            <div class="mb-4 text-sm font-bold text-secondary uppercase tracking-widest leading-none">Familles à <br> protéger</div>
+                        </div>
+                    </div>
+                    <div class="md:col-span-4 bg-primary rounded-3xl p-10 text-white flex flex-col justify-center text-center">
+                        <div class="text-7xl font-headline font-extrabold tracking-tighter mb-2">25%</div>
+                        <p class="text-white/60 text-xs font-bold uppercase tracking-widest leading-none">Perte de valeur sans transparence</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Solution -->
+        <section id="solution" class="py-32">
+            <div class="max-w-[1440px] mx-auto px-6 md:px-12">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12">
+                    <div class="group">
+                        <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuB8HQ2xHVE150ba71eWY5WqJyV0xGuELiI2aOpvbyH3N_GmPWSitb6XMpOJDGjVgY1MT0K6X6EKNb83vMikNWSFeiRQUJvO-FUC8su7Buh0gCsLHNHzlEmzdrqc4ydDfUMGwk0hv63U917WcDBJk7g0IhUus20ihnfMSQs63XED_5T9Wuu1wrXiuHTFJTsRiA4DVBH6RKj1k5U3QvngPk5fvAS06J8W9pZ6Ie4AQPU5PTxwA4eTMI5MEm-AE8D1kzDCaoYF9lbAHzAY" class="w-full aspect-video object-cover rounded-2xl mb-6">
+                        <h3 class="text-xl font-headline font-extrabold text-primary mb-3">01. Collecte Terrain</h3>
+                        <p class="text-secondary opacity-70">Géoréférencement précis pour prouver l'absence de déforestation.</p>
+                    </div>
+                    <div class="group">
+                        <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCxqZ7mz3wyvOjsN4stDZnJEVgv9PyUjjdt_bOqAQIvCK95hPUfcoY_Z5PuWwclvSqw8nJf3qgghmzI5hCSYDnO8RRueyeUvYNxLD9DhVH825DHcd67pkzduuCZGLp0LhriyCvCAwcXd4Y3SbhNS_W2p5vwNSnoOiMmwF-24yUs7M0vof1iTH3MEAwSd85rdnmLxxnakUAXXJYl41-P9ST6jLbFLa-QVCjGtQIWrQSL8dbSGF6GEGp4kzq4VPA6m8DBO26fRk3SsTUH" class="w-full aspect-video object-cover rounded-2xl mb-6">
+                        <h3 class="text-xl font-headline font-extrabold text-primary mb-3">02. Suivi Immuable</h3>
+                        <p class="text-secondary opacity-70">Chaque transfert est inscrit sur la blockchain Polygon.</p>
+                    </div>
+                    <div class="group sm:col-span-2 lg:col-span-1">
+                        <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDLaW19TaTDy6f4SlalzS8X1hx0ieuVLyfZ1NxL9dVp2k9WMRMr7y1g65SqOlqBrWnXsaUa4ZUFA8yAavJrSNe4snpni-j20zKNHZAW_YpZrSk70T4_bIipYPfKLl-UNItZLiKQIzhpWcN2d5wzYcGOba1AlsEOje71IMyyutUJ0YAKuGgLDNmzKlGuQvUJ9ewxA2tN0Bu8H0wy5_T9gGp4rFX_2kTuwDBFpCZLIMVhiX8RYoZlbu0hantiWZPOfbpEqHBqpAAMj6gC" class="w-full aspect-video object-cover rounded-2xl mb-6">
+                        <h3 class="text-xl font-headline font-extrabold text-primary mb-3">03. Certification</h3>
+                        <p class="text-secondary opacity-70">Génération de certificats EUDR instantanés.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-white border-t border-black/5 py-12">
+        <div class="max-w-[1440px] mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
+            <div class="flex items-center gap-3">
+                <img src="Logo.png" alt="Logo" style="height: 32px;">
+                <span class="text-lg font-extrabold text-primary font-headline tracking-tighter">ChainCacao</span>
+            </div>
+            <p class="text-secondary/50 text-[10px] font-bold uppercase tracking-widest text-center md:text-left">© 2026 ChainCacao — Team TG-26 — Togo</p>
+        </div>
+    </footer>
+</body>
+</html>

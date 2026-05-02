@@ -1,0 +1,106 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+    scroll-behavior: smooth;
+}
+
+.material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    vertical-align: middle;
+}
+
+.premium-shadow {
+    box-shadow: 0 20px 50px -12px rgba(21, 66, 18, 0.08);
+}
+
+/* NAVIGATION STYLE */
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap; /* Empêche le passage à la ligne */
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 14px; /* Légèrement réduit pour gagner de l'espace */
+    font-weight: 700;
+    color: #755750;
+    text-decoration: none;
+    padding: 8px 14px;
+    border-radius: 50px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    flex-shrink: 0; /* Empêche le rétrécissement du bouton */
+}
+
+.nav-link i {
+    font-size: 20px;
+    transition: transform 0.3s ease;
+}
+
+/* Hover effect */
+.nav-link:hover {
+    color: #154212; /* primary */
+    background: rgba(21, 66, 18, 0.05);
+}
+
+.nav-link:hover i {
+    transform: translateY(-2px);
+}
+
+/* ACTIVE STATE */
+.nav-link.active {
+    color: #ffffff !important;
+    background: #154212; /* primary */
+    box-shadow: 0 10px 20px rgba(21, 66, 18, 0.2);
+    transform: scale(1.05);
+}
+
+/* Barrette d'animation sous le menu */
+.nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    width: 0;
+    height: 3px;
+    background: #735c00; /* tertiary */
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+    border-radius: 10px;
+}
+
+.nav-link.active::after {
+    width: 30px;
+    bottom: -10px;
+}
+
+/* REVEAL ANIMATIONS */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.reveal {
+    opacity: 0;
+}
+
+.reveal.active {
+    animation: fadeInUp 0.8s ease-out forwards;
+}
+
+/* APP SHOWCASE STYLES */
+.phone-gallery-scroll {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.phone-gallery-scroll::-webkit-scrollbar {
+    display: none;
+}

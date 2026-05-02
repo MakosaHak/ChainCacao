@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ChainCacao Mobile</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+    
+    <link rel="stylesheet" href="style.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+    <!-- 1. Welcome -->
+    <div id="screen-welcome" class="screen active">
+        <img src="../Logo.png" alt="Logo" class="welcome-logo">
+        <h1 style="font-weight: 800; font-size: 32px; margin-bottom: 8px;">ChainCacao</h1>
+        <p style="opacity: 0.7; margin-bottom: 40px; padding: 0 40px; font-size: 14px;">La traçabilité blockchain du cacao togolais.</p>
+        <div style="width: 100%; padding: 0 10px;">
+            <button class="btn-main" onclick="navigateTo('screen-login')" style="background: white; color: var(--primary);">Se Connecter</button>
+            <button onclick="navigateTo('screen-signup')" style="background: transparent; color: white; border: none; margin-top: 24px; font-weight: 700; width: 100%; font-size: 14px;">Créer un compte</button>
+        </div>
+    </div>
+
+    <!-- 2. Login -->
+    <div id="screen-login" class="screen">
+        <div class="header">
+            <button onclick="navigateTo('screen-welcome')" style="background:none; border:none; color: var(--primary);"><span class="material-symbols-outlined">arrow_back</span></button>
+            <h2>Connexion</h2>
+            <div style="width: 24px;"></div>
+        </div>
+        <div class="card">
+            <input type="email" id="login-email" placeholder="Email">
+            <input type="password" id="login-password" placeholder="Mot de passe">
+            <button class="btn-main" onclick="login()">Se Connecter</button>
+        </div>
+    </div>
+
+    <!-- 3. Signup -->
+    <div id="screen-signup" class="screen">
+        <div class="header">
+            <button onclick="navigateTo('screen-welcome')" style="background:none; border:none; color: var(--primary);"><span class="material-symbols-outlined">arrow_back</span></button>
+            <h2>Inscription</h2>
+            <div style="width: 24px;"></div>
+        </div>
+        <div class="card">
+            <input type="text" id="signup-name" placeholder="Nom Complet">
+            <select id="signup-role">
+                <option value="agriculteur">Agriculteur / Producteur</option>
+                <option value="cooperative">Responsable Coopérative</option>
+            </select>
+            <input type="text" id="signup-coop" placeholder="Localité / Coop">
+            <input type="email" id="signup-email" placeholder="Email">
+            <input type="password" id="signup-password" placeholder="Mot de passe">
+            <button class="btn-main" onclick="signUp()">Créer mon accès</button>
+        </div>
+    </div>
+
+    <!-- 4. Dashboard -->
+    <div id="screen-dashboard" class="screen">
+        <div class="header">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 40px; height: 40px; background: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white;">
+                    <span class="material-symbols-outlined">person</span>
+                </div>
+                <div>
+                    <h4 id="user-name" style="font-size: 14px; font-weight: 800;">Utilisateur</h4>
+                    <span id="user-role-badge" class="badge">Role</span>
+                </div>
+            </div>
+            <button onclick="auth.signOut().then(()=>location.reload())" style="background:none; border:none; color: var(--error);"><span class="material-symbols-outlined">logout</span></button>
+        </div>
+
+        <div class="stats-row">
+            <div class="stat-box">
+                <div class="value" id="stat-lots">0</div>
+                <div class="label">Lots</div>
+            </div>
+            <div class="stat-box">
+                <div class="value" id="stat-weight">0</div>
+                <div class="label">KG Total</div>
+            </div>
+        </div>
+
+        <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 12px;">Actions Rapides</h3>
+        <div class="action-row" id="role-actions">
+            <!-- Populé par JS -->
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h3 style="font-size: 16px; font-weight: 800;">Activité Récente</h3>
+            <button onclick="loadDashboardData()" style="background:none; border:none; color: var(--primary); font-weight: 800; font-size: 12px;">Rafraîchir</button>
+        </div>
+
+        <div id="lots-list">
+            <!-- Liste lots -->
+        </div>
+    </div>
+
+    <!-- 5. Enregistrement Lot -->
+    <div id="screen-add-lot" class="screen">
+        <div class="header">
+            <button onclick="navigateTo('screen-dashboard')" style="background:none; border:none; color: var(--primary);"><span class="material-symbols-outlined">close</span></button>
+            <h2>Nouveau Lot</h2>
+            <div style="width: 24px;"></div>
+        </div>
+        <div class="card">
+            <label style="font-size: 11px; font-weight: 800; color: #999; text-transform: uppercase; margin-bottom: 8px; display: block;">Espèce</label>
+            <select id="lot-variete">
+                <option value="Criollo">Criollo</option>
+                <option value="Forastero">Forastero</option>
+                <option value="Trinitario">Trinitario</option>
+            </select>
+            <label style="font-size: 11px; font-weight: 800; color: #999; text-transform: uppercase; margin-bottom: 8px; display: block;">Poids (KG)</label>
+            <input type="number" id="lot-poids" placeholder="Ex: 45">
+            
+            <div class="gps-card" id="gps-status">
+                <span class="material-symbols-outlined" style="font-size: 32px; margin-bottom: 8px;">location_on</span>
+                <p id="gps-text" style="font-size: 13px; font-weight: 700;">Point GPS Requis</p>
+                <button onclick="captureGPS()" style="margin-top: 10px; background: white; border: 1px solid var(--primary); padding: 8px 16px; border-radius: 99px; font-weight: 800; font-size: 12px; color: var(--primary);">Fixer GPS</button>
+            </div>
+
+            <div style="background: #f1f3f1; padding: 12px; border-radius: 12px; text-align: center; margin-bottom: 16px;">
+                <span style="font-size: 10px; font-weight: 800; opacity: 0.5;">ID : </span>
+                <span id="generated-id" style="font-weight: 800; font-size: 12px;">#TG-26-XXXX</span>
+            </div>
+
+            <button class="btn-main" onclick="saveLot()">Enregistrer Blockchain</button>
+        </div>
+    </div>
+
+    <!-- 6. QR Code -->
+    <div id="screen-qr-view" class="screen" style="align-items: center; justify-content: center;">
+        <div class="card" style="text-align: center;">
+            <h3 id="qr-lot-id" style="font-weight: 800; margin-bottom: 24px;">#ID</h3>
+            <div id="qrcode" style="margin-bottom: 24px;"></div>
+            <p style="font-size: 12px; font-weight: 600; color: #777;">Preuve d'origine immuable.</p>
+            <button class="btn-main" onclick="navigateTo('screen-dashboard')">Fermer</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

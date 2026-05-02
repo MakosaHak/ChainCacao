@@ -1,0 +1,171 @@
+/* 
+   ChainCacao - Style Global 2.0
+   Design Système : Vert Forêt, Terre, Or
+*/
+
+:root {
+    --primary: #154212;
+    --primary-light: #2d5a27;
+    --secondary: #755750;
+    --tertiary: #735c00;
+    --background: #F8F9FA;
+    --surface: #ffffff;
+    --error: #ba1a1a;
+    --text-main: #1b1d0e;
+    --text-muted: #5d5e4d;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+    background-color: var(--background);
+    color: var(--text-main);
+    line-height: 1.5;
+    overflow-x: hidden;
+}
+
+/* NAVIGATION */
+nav {
+    height: 72px;
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    z-index: 1000;
+}
+
+.nav-container {
+    width: 100%;
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* PORTAIL LAYOUT */
+.portal-grid {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 32px;
+    margin-top: 40px;
+}
+
+@media (max-width: 992px) {
+    .portal-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* CARDS */
+.card {
+    background: var(--surface);
+    border-radius: 24px;
+    padding: 32px;
+    border: 1px solid rgba(0,0,0,0.05);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.02);
+    height: fit-content;
+    overflow: hidden; /* Empêche le débordement du contenu */
+}
+
+/* UTILS */
+.hidden { display: none !important; }
+
+.flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.space-y-4 > * + * { margin-top: 16px; }
+.space-y-6 > * + * { margin-top: 24px; }
+
+/* BOUTONS */
+.btn {
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #000;
+    transform: translateY(-2px);
+}
+
+.btn-outline {
+    background: transparent;
+    border: 1px solid rgba(0,0,0,0.1);
+    color: var(--secondary);
+}
+
+/* INPUTS */
+input, select {
+    width: 100%;
+    padding: 14px 20px;
+    border-radius: 12px;
+    border: 1px solid rgba(0,0,0,0.1);
+    background: #f1f3f4;
+    font-weight: 600;
+    font-family: inherit;
+    outline: none;
+}
+
+input:focus {
+    border-color: var(--primary);
+    background: white;
+}
+
+/* DASHBOARD SPECIFIC */
+.stat-widget {
+    background: white;
+    padding: 24px;
+    border-radius: 20px;
+    border-left: 4px solid var(--primary);
+}
+
+.result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.tag {
+    padding: 4px 12px;
+    border-radius: 99px;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.tag-success { background: #e8f5e9; color: #2e7d32; }
+
+/* ANIMATIONS */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-in {
+    animation: fadeIn 0.4s ease forwards;
+}
