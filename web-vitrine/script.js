@@ -4,8 +4,9 @@
  */
 
 // --- CONFIGURATION FIREBASE ---
+// NOTE: Use environment variables or a secure configuration file for production
 const firebaseConfig = {
-  apiKey: "AIzaSyDKzMjinbLykA-N2Sq6bq2dLxLBeuzZHbA",
+  apiKey: process.env.FIREBASE_API_KEY,
   authDomain: "chaincacao-e9ae8.firebaseapp.com",
   databaseURL: "https://chaincacao-e9ae8-default-rtdb.firebaseio.com",
   projectId: "chaincacao-e9ae8",
