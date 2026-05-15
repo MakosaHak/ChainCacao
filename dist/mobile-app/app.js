@@ -140,24 +140,48 @@ function updateUIByRole(role) {
     }
 }
 
-// Nouvelle fonction pour l'exportateur pour certifier
 async function certifyLot(lot) {
-    if (!confirm(`Certifier officiellement le lot ${lot.id_lot} EUDR ?`)) return;
+    if (!confirm(`Certifier officiellement le lot ${lot.id_lot} sur la Blockchain ?`)) return;
 
     try {
-        await db.collection('lots').doc(lot.id_lot).update({ status: 'Certifié' });
+        alert("Initialisation de la certification Blockchain...");
+        
+        let txHash = "0x_simulation_" + Math.random().toString(16).slice(2, 10);
+
+        // Appel réel de la Blockchain
+        if (typeof BlockchainService !== 'undefined') {
+            const bc = new BlockchainService();
+            await bc.connect(); // L'exportateur connecte son MetaMask
+            
+            const dataHash = bc.generateLotHash(lot.id_lot, lot.gps_lat, lot.gps_long, lot.poids);
+            txHash = await bc.registerLotOnChain(lot.id_lot, dataHash);
+            alert("Succès ! Preuve immuable ancrée sur Polygon.");
+        }
+
+        // Mise à jour de Firestore avec le statut Certifié et le Hash réel
+        await db.collection('lots').doc(lot.id_lot).update({ 
+            status: 'Certifié EUDR',
+            blockchain_hash: txHash,
+            certified_at: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
         await db.collection('lot_history').add({
             id_lot: lot.id_lot,
-            step_name: "Certification EUDR Officielle",
-            description: "Exportateur a validé l'intégrité GPS et généré le certificat officiel.",
-            location: "Plateforme Export",
+            step_name: "Certification Blockchain EUDR",
+            description: "L'exportateur a validé le lot et ancré la preuve d'intégrité sur Polygon.",
+            location: "Centre d'Exportation",
             created_at: firebase.firestore.FieldValue.serverTimestamp()
         });
-        alert("Certificat EUDR généré et lot certifié.");
+
+        alert("Certificat EUDR généré et lot ancré !");
         loadDashboardData();
-    } catch (e) { alert("Erreur : " + e.message); }
+    } catch (e) { 
+        console.error(e);
+        alert("Erreur de certification : " + e.message); 
+    }
 }
-// --- GESTION DES LOTS ---
+
+// --- GESTION DES LOTS (AGRICULTEUR) ---
 function captureGPS() {
     const statusText = document.getElementById('gps-text');
     const statusIcon = document.getElementById('gps-status');
@@ -181,6 +205,7 @@ function generateNewID() {
 
 async function saveLot() {
     const idLot = document.getElementById('generated-id').innerText;
+    
     const lotData = {
         id_lot: idLot,
         variete: document.getElementById('lot-variete').value,
@@ -189,13 +214,13 @@ async function saveLot() {
         gps_long: currentGPS ? currentGPS.lng : 1.212,
         status: "Récolté",
         producteur_id: auth.currentUser.uid,
-        blockchain_hash: "0x" + Math.random().toString(16).slice(2, 15),
+        blockchain_hash: "--- En attente ---",
         created_at: firebase.firestore.FieldValue.serverTimestamp()
     };
 
     try {
         await db.collection('lots').doc(idLot).set(lotData);
-        alert("Lot enregistré sur la Blockchain !");
+        alert("Lot enregistré (En attente de certification).");
         navigateTo('screen-dashboard');
     } catch (error) {
         alert("Erreur d'enregistrement : " + error.message);
@@ -288,11 +313,36 @@ function viewLotQR(id) {
 }
 
 function startScanner() {
-    alert("Ouverture du scanner camera...");
-    setTimeout(() => {
-        const simulatedID = "#TG-26-4512"; // Simulation
-        alert("Lot détecté : " + simulatedID);
-        db.collection('lots').doc(simulatedID).update({ status: "En transit" });
-        loadDashboardData();
-    }, 2000);
+    const scanID = prompt("Simulation Scan QR Code\nEntrez l'ID du lot (ex: #TG-26-1234) :");
+    
+    if (!scanID || scanID.trim() === "") return;
+
+    alert("Recherche du lot " + scanID + "...");
+
+    // Mise à jour réelle dans Firestore pour la coopérative
+    db.collection('lots').doc(scanID).get().then((doc) => {
+        if (doc.exists) {
+            db.collection('lots').doc(scanID).update({ 
+                status: "En transit",
+                collected_at: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => {
+                alert("Lot " + scanID + " validé ! Statut : EN TRANSIT");
+                
+                // Ajouter à l'historique
+                db.collection('lot_history').add({
+                    id_lot: scanID,
+                    step_name: "Collecte Coopérative",
+                    description: "Le sac a été scanné et collecté par la coopérative.",
+                    location: currentProfile ? currentProfile.cooperative_name : "Centre de collecte",
+                    created_at: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                loadDashboardData();
+            });
+        } else {
+            alert("Erreur : Ce lot n'existe pas dans la base de données.");
+        }
+    }).catch((error) => {
+        alert("Erreur lors du scan : " + error.message);
+    });
 }

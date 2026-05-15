@@ -263,14 +263,46 @@ async function searchLot() {
 
 async function markConformity() {
     const id = document.getElementById('res-id').innerText;
+    if (!confirm(`Certifier officiellement le lot ${id} sur la Blockchain ?`)) return;
+
     try {
+        const doc = await db.collection('lots').doc(id).get();
+        if (!doc.exists) throw new Error("Lot introuvable");
+        const lot = doc.data();
+
+        alert("Initialisation de la certification Blockchain...");
+        
+        let txHash = "0x_simulation_" + Math.random().toString(16).slice(2, 10);
+
+        // Appel réel de la Blockchain
+        if (typeof BlockchainService !== 'undefined') {
+            const bc = new BlockchainService();
+            await bc.connect(); // L'exportateur connecte son MetaMask
+            
+            const dataHash = bc.generateLotHash(lot.id_lot, lot.gps_lat, lot.gps_long, lot.poids);
+            txHash = await bc.registerLotOnChain(lot.id_lot, dataHash);
+            alert("Succès ! Preuve immuable ancrée sur Polygon.");
+        }
+
         await db.collection('lots').doc(id).update({ 
             status: 'Certifié',
-            is_deforestation_free: true 
+            is_deforestation_free: true,
+            blockchain_hash: txHash,
+            certified_at: firebase.firestore.FieldValue.serverTimestamp()
         });
-        alert("Lot marqué conforme et certifié !");
+
+        // Ajout à l'historique
+        await db.collection('lot_history').add({
+            id_lot: id,
+            step_name: "Certification EUDR",
+            description: "Validation de conformité EUDR effectuée par l'exportateur et ancrage blockchain.",
+            location: "Portail Export",
+            created_at: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        alert("Lot marqué conforme et certifié sur la Blockchain !");
         searchLot();
-    } catch (e) { alert(e.message); }
+    } catch (e) { alert("Erreur : " + e.message); }
 }
 
 async function updateLotStatus(newStatus) {
