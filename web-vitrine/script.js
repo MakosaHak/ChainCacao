@@ -330,7 +330,75 @@ async function updateLotStatus(newStatus) {
     } catch (e) { alert(e.message); }
 }
 
-function generateEUCertificate() {
+async function generateEUCertificate() {
     const id = document.getElementById('res-id').innerText;
-    alert("Certificat EUDR généré pour le lot " + id + "\nFichier PDF prêt pour l'export.");
+    
+    try {
+        const docSnap = await db.collection('lots').doc(id).get();
+        if (!docSnap.exists) {
+            alert("Erreur : Données du lot introuvables.");
+            return;
+        }
+        const lot = docSnap.data();
+
+        // Utilisation de jsPDF (chargé via UMD)
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        // Design du certificat
+        doc.setFillColor(21, 66, 18); // Vert ChainCacao
+        doc.rect(0, 0, 210, 40, 'F');
+        
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(22);
+        doc.text("CERTIFICAT DE CONFORMITÉ EUDR", 105, 25, { align: "center" });
+
+        doc.setTextColor(0, 0, 0);
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text("ID DU LOT : " + lot.id_lot, 20, 60);
+        
+        doc.setFont("helvetica", "normal");
+        doc.text("Date de Certification : " + (lot.certified_at ? lot.certified_at.toDate().toLocaleDateString() : new Date().toLocaleDateString()), 20, 70);
+        
+        doc.line(20, 75, 190, 75);
+
+        doc.setFontSize(14);
+        doc.setFont("helvetica", "bold");
+        doc.text("DÉTAILS TECHNIQUES", 20, 90);
+        
+        doc.setFontSize(11);
+        doc.setFont("helvetica", "normal");
+        doc.text("Variété : " + (lot.variete || "N/A"), 30, 100);
+        doc.text("Poids Net : " + (lot.poids || 0) + " KG", 30, 110);
+        doc.text("Origine GPS : " + lot.gps_lat + ", " + lot.gps_long, 30, 120);
+        
+        doc.setFont("helvetica", "bold");
+        doc.text("Statut Environnemental : CONFORME (Zéro Déforestation)", 30, 130);
+
+        doc.rect(20, 145, 170, 40);
+        doc.setFontSize(12);
+        doc.text("PREUVE BLOCKCHAIN (IMMUTABILITÉ)", 105, 155, { align: "center" });
+        doc.setFontSize(8);
+        doc.setFont("courier", "normal");
+        doc.text("HASH POLYGON : " + (lot.blockchain_hash || "N/A"), 105, 170, { align: "center" });
+        doc.text("Vérifiable sur : https://amoy.polygonscan.com", 105, 180, { align: "center" });
+
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "italic");
+        doc.text("Ce document atteste que le cacao contenu dans ce lot respecte les normes d'intégrité", 105, 220, { align: "center" });
+        doc.text("et de traçabilité de la plateforme ChainCacao conformément au règlement (UE) 2023/1115.", 105, 228, { align: "center" });
+
+        // Bas de page
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "bold");
+        doc.text("CHAINCACAO - TOGO - 2026", 105, 280, { align: "center" });
+
+        // Téléchargement
+        doc.save(`Certificat_EUDR_${lot.id_lot}.pdf`);
+        
+    } catch (e) {
+        console.error(e);
+        alert("Erreur lors de la génération du PDF : " + e.message);
+    }
 }
